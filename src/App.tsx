@@ -1,0 +1,380 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, User, AlertCircle, Loader2, CheckCircle2, ChevronRight, Lock, LogOut, Save, Image as ImageIcon, Upload, Copy } from 'lucide-react';
+
+export default function App() {
+  const [view, setView] = useState<'main' | 'login' | 'admin'>('main');
+  const [settings, setSettings] = useState({ systemName: 'Semakan ID DELIMa Murid', schoolName: 'SK Batu Lanchang', logoUrl: '' });
+  const [adminToken, setAdminToken] = useState('');
+  
+  // Student States
+  const [mykid, setMykid] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState('');
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  // Admin Login States
+  const [adminUser, setAdminUser] = useState('');
+  const [adminPass, setAdminPass] = useState('');
+  const [adminError, setAdminError] = useState('');
+  const [adminLoading, setAdminLoading] = useState(false);
+
+  // Admin Form States
+  const [formSettings, setFormSettings] = useState({ systemName: '', schoolName: '', logoUrl: '' });
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        setSettings(data);
+        setFormSettings(data);
+      })
+      .catch(console.error);
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminError('');
+    setAdminLoading(true);
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: adminUser, password: adminPass })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setAdminToken(data.token);
+        setView('admin');
+        setAdminUser('');
+        setAdminPass('');
+      } else {
+        setAdminError(data.message || 'Log masuk gagal.');
+      }
+    } catch (err) {
+      setAdminError('Ralat sambungan pelayan.');
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminLoading(true);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: adminToken, ...formSettings })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setSettings(data.settings);
+        alert('Tetapan berjaya disimpan.');
+      } else {
+        alert(data.message || 'Gagal menyimpan.');
+        if (data.message === 'Akses ditolak atau sesi tamat.') setView('login');
+      }
+    } catch (err) {
+      alert('Ralat pelayan.');
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Saiz gambar terlalu besar. Maksimum 2MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormSettings({ ...formSettings, logoUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setResult(null);
+
+    // Frontend Validation
+    if (!mykid.trim()) {
+      setError('Sila masukkan nombor MyKid.');
+      return;
+    }
+    const cleanMyKid = mykid.trim().replace(/-/g, '');
+    if (!/^\d+$/.test(cleanMyKid) || cleanMyKid.length !== 12) {
+      setError('No. MyKid tidak sah. Sila masukkan 12 digit nombor.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // 4. Minta token sesi daripada server terlebih dahulu
+      const tokenResponse = await fetch('/api/token');
+      if (!tokenResponse.ok) throw new Error('Gagal mendapatkan token sesi.');
+      const { token } = await tokenResponse.json();
+
+      // Hantar MyKid bersama token ke backend pelayan kita
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mykid: cleanMyKid, token })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || data.status === 'error') {
+         setError(data.message || 'Ralat server.');
+      } else {
+         setResult(data);
+      }
+    } catch (err) {
+      setError('Ralat sambungan pelayan. Sila cuba lagi.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#E5E9F2] flex items-center justify-center p-4 sm:p-8 font-sans selection:bg-[#A098FE]/30 relative">
+      
+      {view === 'login' && (
+        <div className="w-full max-w-md bg-[#F2F5FA] rounded-[40px] shadow-2xl relative flex flex-col border-[6px] border-white/50 p-8 sm:p-10 animate-in fade-in zoom-in-95 duration-300">
+          <button onClick={() => setView('main')} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors">
+             <LogOut size={20} className="transform rotate-180" />
+          </button>
+          <div className="mb-8 text-center mt-2">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600">
+              <Lock size={32} />
+            </div>
+            <h1 className="text-2xl font-bold text-[#161D35] tracking-tight mb-2">Log Masuk Admin</h1>
+            <p className="text-[#A3A7BB] font-medium text-sm">Hanya untuk pentadbir sistem</p>
+          </div>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <input type="text" placeholder="ID Pengguna" value={adminUser} onChange={e => setAdminUser(e.target.value)} required className="w-full bg-white rounded-2xl py-3.5 px-4 text-[15px] font-medium text-[#161D35] placeholder-[#A3A7BB] outline-none focus:ring-2 focus:ring-[#A098FE] transition-all" />
+            </div>
+            <div>
+              <input type="password" placeholder="Kata Laluan" value={adminPass} onChange={e => setAdminPass(e.target.value)} required className="w-full bg-white rounded-2xl py-3.5 px-4 text-[15px] font-medium text-[#161D35] placeholder-[#A3A7BB] outline-none focus:ring-2 focus:ring-[#A098FE] transition-all" />
+            </div>
+            {adminError && <p className="text-[#F76566] text-xs font-medium text-center">{adminError}</p>}
+            <button type="submit" disabled={adminLoading} className="w-full bg-[#161D35] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#2A3454] transition-colors flex items-center justify-center gap-2 mt-2 shadow-lg shadow-[#161D35]/20">
+              {adminLoading ? <Loader2 size={18} className="animate-spin" /> : 'Log Masuk'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {view === 'admin' && (
+        <div className="w-full max-w-xl bg-[#F2F5FA] rounded-[40px] shadow-2xl relative flex flex-col border-[6px] border-white/50 p-6 sm:p-10 animate-in fade-in zoom-in-95 duration-300">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-2xl font-bold text-[#161D35] tracking-tight">Tetapan Sistem</h1>
+              <p className="text-[#A3A7BB] font-medium text-sm mt-1">Ubah maklumat aplikasi</p>
+            </div>
+            <button onClick={() => { setAdminToken(''); setView('main'); }} className="flex items-center gap-2 text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors text-sm font-bold">
+              <LogOut size={16} /> Keluar
+            </button>
+          </div>
+
+          <form onSubmit={handleSaveSettings} className="space-y-6">
+            <div className="bg-white p-6 rounded-3xl shadow-sm space-y-4 border border-gray-100">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nama Sistem</label>
+                <input type="text" value={formSettings.systemName} onChange={e => setFormSettings({...formSettings, systemName: e.target.value})} required className="w-full bg-[#F2F5FA] rounded-2xl py-3 px-4 text-[15px] font-medium text-[#161D35] outline-none focus:bg-white focus:ring-2 focus:ring-[#A098FE] transition-all" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nama Sekolah</label>
+                <input type="text" value={formSettings.schoolName} onChange={e => setFormSettings({...formSettings, schoolName: e.target.value})} required className="w-full bg-[#F2F5FA] rounded-2xl py-3 px-4 text-[15px] font-medium text-[#161D35] outline-none focus:bg-white focus:ring-2 focus:ring-[#A098FE] transition-all" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Logo Sekolah</label>
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  {formSettings.logoUrl ? (
+                    <div className="w-20 h-20 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center p-2 shrink-0 relative group">
+                      <img src={formSettings.logoUrl} alt="Logo Preview" className="max-w-full max-h-full object-contain" />
+                      <button type="button" onClick={() => setFormSettings({...formSettings, logoUrl: ''})} className="absolute inset-0 bg-red-500/90 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold">Buang</button>
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 rounded-xl bg-[#F2F5FA] flex items-center justify-center shrink-0 text-gray-400 border border-dashed border-gray-300">
+                      <ImageIcon size={24} />
+                    </div>
+                  )}
+                  <div className="flex-1 w-full">
+                    <label className="flex items-center justify-center w-full bg-[#E5E9F2] hover:bg-[#D0D4E4] text-[#161D35] rounded-xl py-3 cursor-pointer transition-colors font-semibold text-sm gap-2">
+                      <Upload size={16} /> Muat Naik Logo (Maks 2MB)
+                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" disabled={adminLoading} className="w-full bg-[#A098FE] hover:bg-[#8D83FE] text-white rounded-2xl py-4 text-[15px] font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#A098FE]/30">
+              {adminLoading ? <Loader2 size={20} className="animate-spin" /> : <><Save size={20} /> Simpan Tetapan</>}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {view === 'main' && (
+        <div className="w-full max-w-xl bg-[#F2F5FA] rounded-[40px] shadow-2xl relative flex flex-col border-[6px] border-white/50 p-6 sm:p-10 animate-in fade-in duration-300">
+          
+          <button onClick={() => setView('login')} className="absolute top-6 right-6 text-gray-300 hover:text-gray-500 transition-colors" title="Log Masuk Admin">
+            <Lock size={18} />
+          </button>
+
+          {/* Header */}
+          <div className="mb-8 text-center sm:text-left mt-2">
+            {settings.logoUrl && (
+              <div className="flex justify-center sm:justify-start mb-5">
+                <img src={settings.logoUrl} alt="Logo" className="h-20 sm:h-24 object-contain drop-shadow-sm" />
+              </div>
+            )}
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#161D35] tracking-tight mb-2">{settings.systemName}</h1>
+            <p className="text-[#A3A7BB] font-medium text-sm sm:text-base">{settings.schoolName}</p>
+          </div>
+
+          <div className="flex-1 w-full">
+            
+            {/* User Area */}
+            <div className="flex items-center justify-center sm:justify-start mb-8">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white shadow-sm flex items-center justify-center mr-4 border border-gray-100 shrink-0 overflow-hidden">
+                 <div className="w-full h-full bg-yellow-400 relative">
+                    <div className="absolute top-0 left-0 w-1/3 h-full bg-blue-700"></div>
+                    <div className="absolute bottom-0 right-0 w-full h-1/2 bg-red-600"></div>
+                 </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-1">
+                  <h2 className="text-[14px] sm:text-[15px] font-bold text-[#161D35]">DELIMa KPM</h2>
+                  <ChevronRight size={16} className="text-[#A3A7BB]" />
+                </div>
+                <p className="text-[12px] sm:text-[13px] text-[#A3A7BB] font-medium mt-0.5">Semakan ID Pelajar</p>
+              </div>
+            </div>
+
+            {/* Search Card */}
+            <div className="bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.05)] mb-8">
+               <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5 mb-6">
+                  <div className="relative w-16 h-16 shrink-0">
+                    <svg className="w-16 h-16 transform -rotate-90">
+                      <circle cx="32" cy="32" r="28" stroke="#F2F5FA" strokeWidth="6" fill="none" />
+                      <circle cx="32" cy="32" r="28" stroke="#F76566" strokeWidth="6" fill="none" strokeDasharray="175" strokeDashoffset="40" strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Search size={20} className="text-[#F76566]" />
+                    </div>
+                  </div>
+                  <div className="mt-2 sm:mt-1">
+                    <h3 className="font-bold text-[#161D35] text-[15px] sm:text-[16px] mb-1">Carian MyKid</h3>
+                    <p className="text-[13px] text-[#A3A7BB] leading-snug">Masukkan 12 digit tanpa tanda sempang (-)</p>
+                  </div>
+               </div>
+
+               <form onSubmit={handleSearch}>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={mykid}
+                    onChange={(e) => setMykid(e.target.value)}
+                    placeholder="Contoh: 123456789012"
+                    className="w-full bg-[#F2F5FA] rounded-2xl py-3.5 sm:py-4 px-4 text-[15px] font-medium text-[#161D35] placeholder-[#A3A7BB] outline-none focus:bg-white focus:ring-2 focus:ring-[#A098FE] transition-all mb-4 text-center tracking-widest"
+                  />
+                  {error && (
+                    <p className="text-[#F76566] text-xs font-medium text-center mb-4">{error}</p>
+                  )}
+                  <button 
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-white border-2 border-[#F2F5FA] text-[#161D35] rounded-2xl py-3.5 sm:py-4 text-[15px] font-bold hover:bg-[#F2F5FA] hover:border-[#E5E9F2] transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isLoading ? <Loader2 size={18} className="animate-spin text-[#A098FE]" /> : "Semak Sekarang"}
+                  </button>
+               </form>
+            </div>
+
+            {/* Results Area */}
+            {result && (
+              <div className="animate-in slide-in-from-bottom-4 fade-in duration-500 mt-2">
+                
+                {result.status === 'success' ? (
+                  <div className="bg-gradient-to-br from-[#9381FF] to-[#7E69FF] rounded-[28px] p-6 sm:p-8 text-white relative overflow-hidden shadow-xl shadow-[#7E69FF]/30 border border-white/10">
+                    <div className="absolute -right-4 bottom-4 flex flex-col gap-1.5 opacity-10 hidden sm:flex">
+                       <div className="w-16 h-3 bg-white rounded-full"></div>
+                       <div className="w-24 h-3 bg-white rounded-full ml-4"></div>
+                       <div className="w-20 h-3 bg-white rounded-full -ml-2"></div>
+                       <div className="w-16 h-3 bg-white rounded-full ml-6"></div>
+                    </div>
+                    
+                    <div className="relative z-10 text-center sm:text-left">
+                      <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 mb-6 backdrop-blur-md shadow-sm">
+                        <CheckCircle2 size={14} className="text-white" />
+                        <span className="text-[11px] font-bold tracking-wide">Rekod Dijumpai</span>
+                      </div>
+
+                      <h4 className="font-bold text-xl sm:text-2xl mb-1.5 uppercase tracking-wide drop-shadow-sm">{result.nama}</h4>
+                      <p className="text-white/70 text-[13px] sm:text-[14px] font-bold uppercase tracking-wider mb-8 drop-shadow-sm">{result.kelas}</p>
+                      
+                      <div className="space-y-4">
+                        <div className="bg-white/10 hover:bg-white/15 transition-colors rounded-[20px] p-5 backdrop-blur-md border border-white/20 flex flex-col sm:flex-row sm:items-center justify-between text-left gap-4 sm:gap-0 group shadow-inner">
+                          <div>
+                            <p className="text-white/60 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mb-1.5">ID DELIMa</p>
+                            <p className="font-mono text-[14px] sm:text-[15px] font-bold text-white tracking-wide">{result.id}</p>
+                          </div>
+                          <button 
+                            onClick={() => handleCopy(result.id, 'id')}
+                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/25 active:bg-white/30 transition-all text-white shrink-0 shadow-sm backdrop-blur-md border border-white/10 self-end sm:self-auto"
+                            title="Salin ID DELIMa"
+                          >
+                            {copiedField === 'id' ? <CheckCircle2 size={18} className="text-white" /> : <Copy size={18} className="opacity-80 group-hover:opacity-100" />}
+                          </button>
+                        </div>
+                        <div className="bg-white/10 hover:bg-white/15 transition-colors rounded-[20px] p-5 backdrop-blur-md border border-white/20 flex flex-col sm:flex-row sm:items-center justify-between text-left gap-4 sm:gap-0 group shadow-inner">
+                          <div>
+                            <p className="text-white/60 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mb-1.5">Kata Laluan</p>
+                            <p className="font-mono text-[14px] sm:text-[15px] font-bold text-white tracking-widest">{result.password}</p>
+                          </div>
+                          <button 
+                            onClick={() => handleCopy(result.password, 'password')}
+                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/25 active:bg-white/30 transition-all text-white shrink-0 shadow-sm backdrop-blur-md border border-white/10 self-end sm:self-auto"
+                            title="Salin Kata Laluan"
+                          >
+                            {copiedField === 'password' ? <CheckCircle2 size={18} className="text-white" /> : <Copy size={18} className="opacity-80 group-hover:opacity-100" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-[#F76566] rounded-[28px] p-6 sm:p-8 text-white relative overflow-hidden shadow-lg shadow-[#F76566]/30">
+                    <div className="relative z-10 flex flex-col items-center text-center py-4">
+                      <div className="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                        <AlertCircle size={32} />
+                      </div>
+                      <h4 className="font-bold text-lg sm:text-xl mb-2">Tidak Dijumpai</h4>
+                      <p className="text-white/80 text-[13px] sm:text-[14px] font-medium max-w-xs mx-auto">Rekod untuk MyKid ini tidak wujud dalam pangkalan data kami.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
