@@ -4,6 +4,7 @@ import { Search, User, AlertCircle, Loader2, CheckCircle2, ChevronRight, Lock, L
 export default function App() {
   const [view, setView] = useState<'main' | 'login' | 'admin'>('main');
   const [settings, setSettings] = useState({ systemName: 'Semakan ID DELIMa Murid', schoolName: 'SK Batu Lanchang', logoUrl: '' });
+  const [isSettingsLoading, setIsSettingsLoading] = useState(true);
   const [adminToken, setAdminToken] = useState('');
   const [showPwaTutorial, setShowPwaTutorial] = useState(false);
   
@@ -36,8 +37,12 @@ export default function App() {
       .then(data => {
         setSettings(data);
         setFormSettings(data);
+        setIsSettingsLoading(false);
       })
-      .catch(console.error);
+      .catch(err => {
+        console.error(err);
+        setIsSettingsLoading(false);
+      });
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -254,19 +259,29 @@ export default function App() {
 
           {/* Header */}
           <div className="mb-8 text-center mt-2">
-            {settings.logoUrl && (
-              <div className="flex justify-center mb-5">
-                <img src={settings.logoUrl} alt="Logo" className="h-20 sm:h-24 object-contain drop-shadow-sm" />
-              </div>
+            {isSettingsLoading ? (
+               <div className="animate-pulse flex flex-col items-center">
+                 <div className="w-20 h-20 bg-slate-200 rounded-xl mb-5"></div>
+                 <div className="h-8 w-64 bg-slate-200 rounded-lg mb-3"></div>
+                 <div className="h-5 w-40 bg-slate-200 rounded-lg"></div>
+               </div>
+            ) : (
+              <>
+                {settings.logoUrl && (
+                  <div className="flex justify-center mb-5">
+                    <img src={settings.logoUrl} alt="Logo" className="h-20 sm:h-24 object-contain drop-shadow-sm" loading="lazy" />
+                  </div>
+                )}
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">{settings.systemName}</h1>
+                <p className="text-slate-500 font-medium text-sm sm:text-base">{settings.schoolName}</p>
+              </>
             )}
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">{settings.systemName}</h1>
-            <p className="text-slate-500 font-medium text-sm sm:text-base">{settings.schoolName}</p>
           </div>
 
-          <div className={`flex-1 w-full ${result ? 'flex flex-col md:flex-row gap-8 items-start' : ''}`}>
+          <div className={`flex-1 w-full ${(result || isLoading) ? 'flex flex-col md:flex-row gap-8 items-start' : ''}`}>
 
             {/* Search Card */}
-            <div className={`bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 ${result ? 'w-full md:w-1/2 mb-0' : 'mb-8'}`}>
+            <div className={`bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 ${(result || isLoading) ? 'w-full md:w-1/2 mb-0' : 'mb-8'}`}>
                <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5 mb-6">
                   <div className="relative w-16 h-16 shrink-0">
                     <svg className="w-16 h-16 transform -rotate-90">
@@ -306,10 +321,20 @@ export default function App() {
             </div>
 
             {/* Results Area */}
-            {result && (
+            {(result || isLoading) && (
               <div className="w-full md:w-1/2 animate-in slide-in-from-bottom-4 fade-in duration-500 mt-2 md:mt-0">
                 
-                {result.status === 'success' ? (
+                {isLoading ? (
+                  <div className="bg-white/50 border border-slate-200 rounded-[24px] p-6 sm:p-8 relative overflow-hidden animate-pulse">
+                     <div className="h-6 w-24 bg-slate-200 rounded-full mb-6"></div>
+                     <div className="h-8 w-48 bg-slate-200 rounded-lg mb-3"></div>
+                     <div className="h-4 w-32 bg-slate-200 rounded-lg mb-8"></div>
+                     <div className="space-y-4">
+                        <div className="h-20 bg-slate-200 rounded-2xl w-full"></div>
+                        <div className="h-20 bg-slate-200 rounded-2xl w-full"></div>
+                     </div>
+                  </div>
+                ) : result?.status === 'success' ? (
                   <div className="bg-gradient-to-br from-violet-600 to-indigo-600 rounded-[24px] p-6 sm:p-8 text-white relative overflow-hidden shadow-lg shadow-indigo-500/20 border border-white/10">
                     <div className="absolute -right-4 bottom-4 flex flex-col gap-1.5 opacity-10 hidden sm:flex">
                        <div className="w-16 h-3 bg-white rounded-full"></div>
