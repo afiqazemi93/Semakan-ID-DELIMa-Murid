@@ -258,7 +258,7 @@ export default function App() {
           </div>
 
           {/* Header */}
-          <div className="mb-8 text-center mt-2">
+          <div className="mb-8 text-center mt-12 sm:mt-2">
             {isSettingsLoading ? (
                <div className="animate-pulse flex flex-col items-center">
                  <div className="w-20 h-20 bg-slate-200 rounded-xl mb-5"></div>
@@ -303,7 +303,14 @@ export default function App() {
                     type="text"
                     inputMode="numeric"
                     value={mykid}
-                    onChange={(e) => setMykid(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setMykid(value);
+                      if (value.trim() === '') {
+                        setResult(null);
+                        setError('');
+                      }
+                    }}
                     placeholder="Contoh: 123456789012"
                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 sm:py-4 px-4 text-[15px] font-medium text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all mb-4 text-center tracking-widest shadow-inner"
                   />
@@ -313,7 +320,7 @@ export default function App() {
                   <button 
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[#8d79ff] text-white rounded-2xl py-3.5 sm:py-4 text-[15px] font-bold hover:bg-[#7b68ee] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#8d79ff]/30 active:scale-[0.98]"
+                    className="w-full bg-[#6a2ffb] text-white rounded-2xl py-3.5 sm:py-4 text-[15px] font-bold hover:bg-[#5926d9] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#6a2ffb]/30 active:scale-[0.98]"
                   >
                     {isLoading ? <Loader2 size={18} className="animate-spin text-white" /> : "SEMAK"}
                   </button>
