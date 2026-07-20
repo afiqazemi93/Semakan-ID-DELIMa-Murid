@@ -152,29 +152,29 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#E5E9F2] flex items-center justify-center p-4 sm:p-8 font-sans selection:bg-[#A098FE]/30 relative">
+    <div className="min-h-screen bg-slate-50 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-100/40 via-slate-50 to-white flex items-center justify-center p-4 sm:p-8 font-sans selection:bg-indigo-500/30 relative">
       
       {view === 'login' && (
-        <div className="w-full max-w-md bg-[#F2F5FA] rounded-[40px] shadow-2xl relative flex flex-col border-[6px] border-white/50 p-8 sm:p-10 animate-in fade-in zoom-in-95 duration-300">
-          <button onClick={() => setView('main')} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors">
+        <div className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-[32px] shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] relative flex flex-col border border-white p-8 sm:p-10 animate-in fade-in zoom-in-95 duration-300">
+          <button onClick={() => setView('main')} className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors">
              <LogOut size={20} className="transform rotate-180" />
           </button>
           <div className="mb-8 text-center mt-2">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600">
+            <div className="w-16 h-16 bg-indigo-50 border border-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-inner">
               <Lock size={32} />
             </div>
-            <h1 className="text-2xl font-bold text-[#161D35] tracking-tight mb-2">Log Masuk Admin</h1>
-            <p className="text-[#A3A7BB] font-medium text-sm">Hanya untuk pentadbir sistem</p>
+            <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight mb-2">Log Masuk Admin</h1>
+            <p className="text-slate-500 font-medium text-sm">Hanya untuk pentadbir sistem</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <input type="text" placeholder="ID Pengguna" value={adminUser} onChange={e => setAdminUser(e.target.value)} required className="w-full bg-white rounded-2xl py-3.5 px-4 text-[15px] font-medium text-[#161D35] placeholder-[#A3A7BB] outline-none focus:ring-2 focus:ring-[#A098FE] transition-all" />
+              <input type="text" placeholder="ID Pengguna" value={adminUser} onChange={e => setAdminUser(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-[15px] font-medium text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all shadow-inner" />
             </div>
             <div>
-              <input type="password" placeholder="Kata Laluan" value={adminPass} onChange={e => setAdminPass(e.target.value)} required className="w-full bg-white rounded-2xl py-3.5 px-4 text-[15px] font-medium text-[#161D35] placeholder-[#A3A7BB] outline-none focus:ring-2 focus:ring-[#A098FE] transition-all" />
+              <input type="password" placeholder="Kata Laluan" value={adminPass} onChange={e => setAdminPass(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-[15px] font-medium text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all shadow-inner" />
             </div>
-            {adminError && <p className="text-[#F76566] text-xs font-medium text-center">{adminError}</p>}
-            <button type="submit" disabled={adminLoading} className="w-full bg-[#161D35] text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-[#2A3454] transition-colors flex items-center justify-center gap-2 mt-2 shadow-lg shadow-[#161D35]/20">
+            {adminError && <p className="text-rose-500 text-xs font-medium text-center">{adminError}</p>}
+            <button type="submit" disabled={adminLoading} className="w-full bg-slate-800 text-white rounded-2xl py-3.5 text-[15px] font-bold hover:bg-slate-900 transition-colors flex items-center justify-center gap-2 mt-2 shadow-lg shadow-slate-800/20 active:scale-[0.98]">
               {adminLoading ? <Loader2 size={18} className="animate-spin" /> : 'Log Masuk'}
             </button>
           </form>
@@ -182,43 +182,43 @@ export default function App() {
       )}
 
       {view === 'admin' && (
-        <div className="w-full max-w-xl bg-[#F2F5FA] rounded-[40px] shadow-2xl relative flex flex-col border-[6px] border-white/50 p-6 sm:p-10 animate-in fade-in zoom-in-95 duration-300">
+        <div className="w-full max-w-xl bg-white/80 backdrop-blur-xl rounded-[32px] shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] relative flex flex-col border border-white p-6 sm:p-10 animate-in fade-in zoom-in-95 duration-300">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-2xl font-bold text-[#161D35] tracking-tight">Tetapan Sistem</h1>
-              <p className="text-[#A3A7BB] font-medium text-sm mt-1">Ubah maklumat aplikasi</p>
+              <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Tetapan Sistem</h1>
+              <p className="text-slate-500 font-medium text-sm mt-1">Ubah maklumat aplikasi</p>
             </div>
-            <button onClick={() => { setAdminToken(''); setView('main'); }} className="flex items-center gap-2 text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors text-sm font-bold">
+            <button onClick={() => { setAdminToken(''); setView('main'); }} className="flex items-center gap-2 text-rose-500 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 px-4 py-2 rounded-xl transition-colors text-sm font-bold border border-rose-100">
               <LogOut size={16} /> Keluar
             </button>
           </div>
 
           <form onSubmit={handleSaveSettings} className="space-y-6">
-            <div className="bg-white p-6 rounded-3xl shadow-sm space-y-4 border border-gray-100">
+            <div className="bg-slate-50 p-6 rounded-[24px] shadow-sm space-y-4 border border-slate-200">
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nama Sistem</label>
-                <input type="text" value={formSettings.systemName} onChange={e => setFormSettings({...formSettings, systemName: e.target.value})} required className="w-full bg-[#F2F5FA] rounded-2xl py-3 px-4 text-[15px] font-medium text-[#161D35] outline-none focus:bg-white focus:ring-2 focus:ring-[#A098FE] transition-all" />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nama Sistem</label>
+                <input type="text" value={formSettings.systemName} onChange={e => setFormSettings({...formSettings, systemName: e.target.value})} required className="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 text-[15px] font-medium text-slate-800 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all shadow-inner" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nama Sekolah</label>
-                <input type="text" value={formSettings.schoolName} onChange={e => setFormSettings({...formSettings, schoolName: e.target.value})} required className="w-full bg-[#F2F5FA] rounded-2xl py-3 px-4 text-[15px] font-medium text-[#161D35] outline-none focus:bg-white focus:ring-2 focus:ring-[#A098FE] transition-all" />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nama Sekolah</label>
+                <input type="text" value={formSettings.schoolName} onChange={e => setFormSettings({...formSettings, schoolName: e.target.value})} required className="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 text-[15px] font-medium text-slate-800 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all shadow-inner" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Logo Sekolah</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Logo Sekolah</label>
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   {formSettings.logoUrl ? (
-                    <div className="w-20 h-20 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center p-2 shrink-0 relative group">
+                    <div className="w-20 h-20 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-2 shrink-0 relative group shadow-sm">
                       <img src={formSettings.logoUrl} alt="Logo Preview" className="max-w-full max-h-full object-contain" />
-                      <button type="button" onClick={() => setFormSettings({...formSettings, logoUrl: ''})} className="absolute inset-0 bg-red-500/90 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold">Buang</button>
+                      <button type="button" onClick={() => setFormSettings({...formSettings, logoUrl: ''})} className="absolute inset-0 bg-rose-500/90 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold backdrop-blur-sm">Buang</button>
                     </div>
                   ) : (
-                    <div className="w-20 h-20 rounded-xl bg-[#F2F5FA] flex items-center justify-center shrink-0 text-gray-400 border border-dashed border-gray-300">
+                    <div className="w-20 h-20 rounded-xl bg-white flex items-center justify-center shrink-0 text-slate-400 border border-dashed border-slate-300 shadow-sm">
                       <ImageIcon size={24} />
                     </div>
                   )}
                   <div className="flex-1 w-full">
-                    <label className="flex items-center justify-center w-full bg-[#E5E9F2] hover:bg-[#D0D4E4] text-[#161D35] rounded-xl py-3 cursor-pointer transition-colors font-semibold text-sm gap-2">
-                      <Upload size={16} /> Muat Naik Logo (Maks 2MB)
+                    <label className="flex items-center justify-center w-full bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 rounded-xl py-3 cursor-pointer transition-colors font-semibold text-sm gap-2 shadow-sm">
+                      <Upload size={16} className="text-violet-500" /> Muat Naik Logo (Maks 2MB)
                       <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                     </label>
                   </div>
@@ -233,7 +233,7 @@ export default function App() {
               </div>
             )}
 
-            <button type="submit" disabled={adminLoading} className="w-full bg-[#A098FE] hover:bg-[#8D83FE] text-white rounded-2xl py-4 text-[15px] font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#A098FE]/30">
+            <button type="submit" disabled={adminLoading} className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-2xl py-4 text-[15px] font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-violet-600/30 active:scale-[0.98]">
               {adminLoading ? <Loader2 size={20} className="animate-spin" /> : <><Save size={20} /> Simpan Tetapan</>}
             </button>
           </form>
@@ -241,13 +241,13 @@ export default function App() {
       )}
 
       {view === 'main' && (
-        <div className={`w-full ${result ? 'max-w-5xl' : 'max-w-xl'} bg-[#F2F5FA] rounded-[40px] shadow-2xl relative flex flex-col border-[6px] border-white/50 p-6 sm:p-10 animate-in fade-in duration-300 transition-all`}>
+        <div className={`w-full ${result ? 'max-w-5xl' : 'max-w-xl'} bg-white/80 backdrop-blur-xl rounded-[32px] shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] relative flex flex-col border border-white p-6 sm:p-10 animate-in fade-in duration-300 transition-all`}>
           
           <div className="absolute top-6 right-6 flex items-center gap-3 z-20">
-            <button onClick={() => setShowPwaTutorial(true)} className="flex items-center gap-1.5 text-xs font-bold text-[#A098FE] bg-[#A098FE]/10 px-3 py-1.5 rounded-full hover:bg-[#A098FE]/20 transition-colors" title="Cara Install Aplikasi">
+            <button onClick={() => setShowPwaTutorial(true)} className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors border border-indigo-100" title="Cara Install Aplikasi">
               <Smartphone size={14} /> Install App
             </button>
-            <button onClick={() => setView('login')} className="text-gray-300 hover:text-gray-500 transition-colors" title="Log Masuk Admin">
+            <button onClick={() => setView('login')} className="text-slate-300 hover:text-slate-500 transition-colors" title="Log Masuk Admin">
               <Lock size={18} />
             </button>
           </div>
@@ -259,27 +259,27 @@ export default function App() {
                 <img src={settings.logoUrl} alt="Logo" className="h-20 sm:h-24 object-contain drop-shadow-sm" />
               </div>
             )}
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#161D35] tracking-tight mb-2">{settings.systemName}</h1>
-            <p className="text-[#A3A7BB] font-medium text-sm sm:text-base">{settings.schoolName}</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">{settings.systemName}</h1>
+            <p className="text-slate-500 font-medium text-sm sm:text-base">{settings.schoolName}</p>
           </div>
 
           <div className={`flex-1 w-full ${result ? 'flex flex-col md:flex-row gap-8 items-start' : ''}`}>
 
             {/* Search Card */}
-            <div className={`bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.05)] ${result ? 'w-full md:w-1/2 mb-0' : 'mb-8'}`}>
+            <div className={`bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 ${result ? 'w-full md:w-1/2 mb-0' : 'mb-8'}`}>
                <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5 mb-6">
                   <div className="relative w-16 h-16 shrink-0">
                     <svg className="w-16 h-16 transform -rotate-90">
-                      <circle cx="32" cy="32" r="28" stroke="#F2F5FA" strokeWidth="6" fill="none" />
-                      <circle cx="32" cy="32" r="28" stroke="#F76566" strokeWidth="6" fill="none" strokeDasharray="175" strokeDashoffset="40" strokeLinecap="round" />
+                      <circle cx="32" cy="32" r="28" stroke="#f1f5f9" strokeWidth="6" fill="none" />
+                      <circle cx="32" cy="32" r="28" stroke="#8b5cf6" strokeWidth="6" fill="none" strokeDasharray="175" strokeDashoffset="40" strokeLinecap="round" />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Search size={20} className="text-[#F76566]" />
+                      <Search size={20} className="text-violet-500" />
                     </div>
                   </div>
                   <div className="mt-2 sm:mt-1">
-                    <h3 className="font-bold text-[#161D35] text-[15px] sm:text-[16px] mb-1">Carian MyKid</h3>
-                    <p className="text-[13px] text-[#A3A7BB] leading-snug">Masukkan 12 digit tanpa tanda sempang (-)</p>
+                    <h3 className="font-bold text-slate-800 text-[15px] sm:text-[16px] mb-1">Carian MyKid</h3>
+                    <p className="text-[13px] text-slate-500 leading-snug">Masukkan 12 digit tanpa tanda sempang (-)</p>
                   </div>
                </div>
 
@@ -290,17 +290,17 @@ export default function App() {
                     value={mykid}
                     onChange={(e) => setMykid(e.target.value)}
                     placeholder="Contoh: 123456789012"
-                    className="w-full bg-[#F2F5FA] rounded-2xl py-3.5 sm:py-4 px-4 text-[15px] font-medium text-[#161D35] placeholder-[#A3A7BB] outline-none focus:bg-white focus:ring-2 focus:ring-[#A098FE] transition-all mb-4 text-center tracking-widest"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 sm:py-4 px-4 text-[15px] font-medium text-slate-800 placeholder-slate-400 outline-none focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all mb-4 text-center tracking-widest shadow-inner"
                   />
                   {error && (
-                    <p className="text-[#F76566] text-xs font-medium text-center mb-4">{error}</p>
+                    <p className="text-rose-500 text-xs font-medium text-center mb-4">{error}</p>
                   )}
                   <button 
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[#8d79ff] text-white rounded-2xl py-3.5 sm:py-4 text-[15px] font-bold hover:bg-[#7b68ee] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#8d79ff]/30"
+                    className="w-full bg-[#8d79ff] text-white rounded-2xl py-3.5 sm:py-4 text-[15px] font-bold hover:bg-[#7b68ee] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#8d79ff]/30 active:scale-[0.98]"
                   >
-                    {isLoading ? <Loader2 size={18} className="animate-spin text-white" /> : "Semak"}
+                    {isLoading ? <Loader2 size={18} className="animate-spin text-white" /> : "SEMAK"}
                   </button>
                </form>
             </div>
@@ -310,7 +310,7 @@ export default function App() {
               <div className="w-full md:w-1/2 animate-in slide-in-from-bottom-4 fade-in duration-500 mt-2 md:mt-0">
                 
                 {result.status === 'success' ? (
-                  <div className="bg-gradient-to-br from-[#9381FF] to-[#7E69FF] rounded-[28px] p-6 sm:p-8 text-white relative overflow-hidden shadow-xl shadow-[#7E69FF]/30 border border-white/10">
+                  <div className="bg-gradient-to-br from-violet-600 to-indigo-600 rounded-[24px] p-6 sm:p-8 text-white relative overflow-hidden shadow-lg shadow-indigo-500/20 border border-white/10">
                     <div className="absolute -right-4 bottom-4 flex flex-col gap-1.5 opacity-10 hidden sm:flex">
                        <div className="w-16 h-3 bg-white rounded-full"></div>
                        <div className="w-24 h-3 bg-white rounded-full ml-4"></div>
@@ -324,47 +324,47 @@ export default function App() {
                         <span className="text-[11px] font-bold tracking-wide">Rekod Dijumpai</span>
                       </div>
 
-                      <h4 className="font-bold text-xl sm:text-2xl mb-1.5 uppercase tracking-wide drop-shadow-sm">{result.nama}</h4>
-                      <p className="text-white/70 text-[13px] sm:text-[14px] font-bold uppercase tracking-wider mb-8 drop-shadow-sm">{result.kelas}</p>
+                      <h4 className="font-extrabold text-xl sm:text-2xl mb-1.5 tracking-tight drop-shadow-sm">{result.nama}</h4>
+                      <p className="text-indigo-100 text-[13px] sm:text-[14px] font-semibold uppercase tracking-wider mb-8 drop-shadow-sm">{result.kelas}</p>
                       
                       <div className="space-y-4">
-                        <div className="bg-white/10 hover:bg-white/15 transition-colors rounded-[20px] p-5 backdrop-blur-md border border-white/20 flex flex-col sm:flex-row sm:items-center justify-between text-left gap-4 sm:gap-0 group shadow-inner">
+                        <div className="bg-white/10 hover:bg-white/20 transition-all rounded-2xl p-5 backdrop-blur-md border border-white/20 flex flex-col sm:flex-row sm:items-center justify-between text-left gap-4 sm:gap-0 group shadow-inner">
                           <div>
-                            <p className="text-white/60 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mb-1.5">ID DELIMa</p>
+                            <p className="text-indigo-200 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mb-1.5">ID DELIMa</p>
                             <p className="font-mono text-[14px] sm:text-[15px] font-bold text-white tracking-wide">{result.id}</p>
                           </div>
                           <button 
                             onClick={() => handleCopy(result.id, 'id')}
-                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/25 active:bg-white/30 transition-all text-white shrink-0 shadow-sm backdrop-blur-md border border-white/10 self-end sm:self-auto"
+                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/30 active:scale-95 transition-all text-white shrink-0 shadow-sm backdrop-blur-md border border-white/10 self-end sm:self-auto"
                             title="Salin ID DELIMa"
                           >
-                            {copiedField === 'id' ? <CheckCircle2 size={18} className="text-white" /> : <Copy size={18} className="opacity-80 group-hover:opacity-100" />}
+                            {copiedField === 'id' ? <CheckCircle2 size={18} className="text-emerald-400" /> : <Copy size={18} className="opacity-80 group-hover:opacity-100" />}
                           </button>
                         </div>
-                        <div className="bg-white/10 hover:bg-white/15 transition-colors rounded-[20px] p-5 backdrop-blur-md border border-white/20 flex flex-col sm:flex-row sm:items-center justify-between text-left gap-4 sm:gap-0 group shadow-inner">
+                        <div className="bg-white/10 hover:bg-white/20 transition-all rounded-2xl p-5 backdrop-blur-md border border-white/20 flex flex-col sm:flex-row sm:items-center justify-between text-left gap-4 sm:gap-0 group shadow-inner">
                           <div>
-                            <p className="text-white/60 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mb-1.5">Kata Laluan</p>
+                            <p className="text-indigo-200 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mb-1.5">Kata Laluan</p>
                             <p className="font-mono text-[14px] sm:text-[15px] font-bold text-white tracking-widest">{result.password}</p>
                           </div>
                           <button 
                             onClick={() => handleCopy(result.password, 'password')}
-                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/25 active:bg-white/30 transition-all text-white shrink-0 shadow-sm backdrop-blur-md border border-white/10 self-end sm:self-auto"
+                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/30 active:scale-95 transition-all text-white shrink-0 shadow-sm backdrop-blur-md border border-white/10 self-end sm:self-auto"
                             title="Salin Kata Laluan"
                           >
-                            {copiedField === 'password' ? <CheckCircle2 size={18} className="text-white" /> : <Copy size={18} className="opacity-80 group-hover:opacity-100" />}
+                            {copiedField === 'password' ? <CheckCircle2 size={18} className="text-emerald-400" /> : <Copy size={18} className="opacity-80 group-hover:opacity-100" />}
                           </button>
                         </div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-[#F76566] rounded-[28px] p-6 sm:p-8 text-white relative overflow-hidden shadow-lg shadow-[#F76566]/30">
+                  <div className="bg-rose-500 rounded-[24px] p-6 sm:p-8 text-white relative overflow-hidden shadow-lg shadow-rose-500/20">
                     <div className="relative z-10 flex flex-col items-center text-center py-4">
                       <div className="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mb-4">
                         <AlertCircle size={32} />
                       </div>
                       <h4 className="font-bold text-lg sm:text-xl mb-2">Tidak Dijumpai</h4>
-                      <p className="text-white/80 text-[13px] sm:text-[14px] font-medium max-w-xs mx-auto">Rekod untuk MyKid ini tidak wujud dalam pangkalan data kami.</p>
+                      <p className="text-rose-100 text-[13px] sm:text-[14px] font-medium max-w-xs mx-auto">Rekod untuk MyKid ini tidak wujud dalam pangkalan data kami.</p>
                     </div>
                   </div>
                 )}

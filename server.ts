@@ -18,12 +18,15 @@ let appSettings = {
 };
 
 // Supabase Setup
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 let supabase: any = null;
 
 if (supabaseUrl && supabaseKey) {
   supabase = createClient(supabaseUrl, supabaseKey);
+  console.log('Supabase client initialized');
+} else {
+  console.log('Warning: Supabase credentials not found in environment variables');
 }
 
 const app = express();
@@ -36,7 +39,10 @@ app.use(express.json({ limit: '10mb' }));
 app.get('/api/settings', async (req, res) => {
   if (supabase) {
     try {
-      const { data, error } = await supabase.from('app_settings').select('*').eq('id', 1).single();
+      const { data, error } = await supabase.from('app_settings').select('*').eq('id', 1).maybeSingle();
+      if (error) {
+        console.error('Ralat Supabase (Settings):', error.message);
+      }
       if (data) {
         if (data.system_name) appSettings.systemName = data.system_name;
         if (data.school_name) appSettings.schoolName = data.school_name;
@@ -82,10 +88,11 @@ app.post('/api/admin/settings', async (req, res) => {
       });
       if (error) {
         console.error('Ralat menyimpan ke Supabase:', error);
-        // Fallback memori tetap akan berjalan
+        return res.status(500).json({ status: 'error', message: `Ralat Pangkalan Data (Supabase): ${error.message}. Sila pastikan RLS (Row-Level Security) dinyahaktifkan untuk table 'app_settings' di Supabase atau gunakan Service Role Key.` });
       }
     } catch (err) {
        console.error('Ralat pelayan Supabase:', err);
+       return res.status(500).json({ status: 'error', message: 'Ralat pelayan semasa menghubungi Supabase.' });
     }
   }
 
@@ -119,7 +126,7 @@ app.post('/api/search', async (req, res) => {
     
     const cleanMyKid = mykid.trim().replace(/-/g, '');
     
-    if (!/^\\d+$/.test(cleanMyKid) || cleanMyKid.length !== 12) {
+    if (!/^\d+$/.test(cleanMyKid) || cleanMyKid.length !== 12) {
       return res.status(400).json({ status: 'error', message: 'No. MyKid tidak sah. Mestilah 12 digit nombor.' });
     }
 
