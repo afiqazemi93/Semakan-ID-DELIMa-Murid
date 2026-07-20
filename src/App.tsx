@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, User, AlertCircle, Loader2, CheckCircle2, ChevronRight, Lock, LogOut, Save, Image as ImageIcon, Upload, Copy } from 'lucide-react';
+import { Search, User, AlertCircle, Loader2, CheckCircle2, ChevronRight, Lock, LogOut, Save, Image as ImageIcon, Upload, Copy, Smartphone, X } from 'lucide-react';
 
 export default function App() {
   const [view, setView] = useState<'main' | 'login' | 'admin'>('main');
   const [settings, setSettings] = useState({ systemName: 'Semakan ID DELIMa Murid', schoolName: 'SK Batu Lanchang', logoUrl: '' });
   const [adminToken, setAdminToken] = useState('');
+  const [showPwaTutorial, setShowPwaTutorial] = useState(false);
   
   // Student States
   const [mykid, setMykid] = useState('');
@@ -24,6 +25,7 @@ export default function App() {
   const [adminPass, setAdminPass] = useState('');
   const [adminError, setAdminError] = useState('');
   const [adminLoading, setAdminLoading] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState('');
 
   // Admin Form States
   const [formSettings, setFormSettings] = useState({ systemName: '', schoolName: '', logoUrl: '' });
@@ -76,7 +78,8 @@ export default function App() {
       const data = await res.json();
       if (data.status === 'success') {
         setSettings(data.settings);
-        alert('Tetapan berjaya disimpan.');
+        setSaveSuccess('Tetapan Berjaya Disimpan!');
+        setTimeout(() => setSaveSuccess(''), 3000);
       } else {
         alert(data.message || 'Gagal menyimpan.');
         if (data.message === 'Akses ditolak atau sesi tamat.') setView('login');
@@ -223,6 +226,13 @@ export default function App() {
               </div>
             </div>
 
+            {saveSuccess && (
+              <div className="bg-emerald-50 text-emerald-600 px-4 py-3 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold border border-emerald-100">
+                <CheckCircle2 size={18} />
+                {saveSuccess}
+              </div>
+            )}
+
             <button type="submit" disabled={adminLoading} className="w-full bg-[#A098FE] hover:bg-[#8D83FE] text-white rounded-2xl py-4 text-[15px] font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#A098FE]/30">
               {adminLoading ? <Loader2 size={20} className="animate-spin" /> : <><Save size={20} /> Simpan Tetapan</>}
             </button>
@@ -231,16 +241,21 @@ export default function App() {
       )}
 
       {view === 'main' && (
-        <div className="w-full max-w-xl bg-[#F2F5FA] rounded-[40px] shadow-2xl relative flex flex-col border-[6px] border-white/50 p-6 sm:p-10 animate-in fade-in duration-300">
+        <div className={`w-full ${result ? 'max-w-5xl' : 'max-w-xl'} bg-[#F2F5FA] rounded-[40px] shadow-2xl relative flex flex-col border-[6px] border-white/50 p-6 sm:p-10 animate-in fade-in duration-300 transition-all`}>
           
-          <button onClick={() => setView('login')} className="absolute top-6 right-6 text-gray-300 hover:text-gray-500 transition-colors" title="Log Masuk Admin">
-            <Lock size={18} />
-          </button>
+          <div className="absolute top-6 right-6 flex items-center gap-3 z-20">
+            <button onClick={() => setShowPwaTutorial(true)} className="flex items-center gap-1.5 text-xs font-bold text-[#A098FE] bg-[#A098FE]/10 px-3 py-1.5 rounded-full hover:bg-[#A098FE]/20 transition-colors" title="Cara Install Aplikasi">
+              <Smartphone size={14} /> Install App
+            </button>
+            <button onClick={() => setView('login')} className="text-gray-300 hover:text-gray-500 transition-colors" title="Log Masuk Admin">
+              <Lock size={18} />
+            </button>
+          </div>
 
           {/* Header */}
-          <div className="mb-8 text-center sm:text-left mt-2">
+          <div className="mb-8 text-center mt-2">
             {settings.logoUrl && (
-              <div className="flex justify-center sm:justify-start mb-5">
+              <div className="flex justify-center mb-5">
                 <img src={settings.logoUrl} alt="Logo" className="h-20 sm:h-24 object-contain drop-shadow-sm" />
               </div>
             )}
@@ -248,27 +263,10 @@ export default function App() {
             <p className="text-[#A3A7BB] font-medium text-sm sm:text-base">{settings.schoolName}</p>
           </div>
 
-          <div className="flex-1 w-full">
-            
-            {/* User Area */}
-            <div className="flex items-center justify-center sm:justify-start mb-8">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white shadow-sm flex items-center justify-center mr-4 border border-gray-100 shrink-0 overflow-hidden">
-                 <div className="w-full h-full bg-yellow-400 relative">
-                    <div className="absolute top-0 left-0 w-1/3 h-full bg-blue-700"></div>
-                    <div className="absolute bottom-0 right-0 w-full h-1/2 bg-red-600"></div>
-                 </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-1">
-                  <h2 className="text-[14px] sm:text-[15px] font-bold text-[#161D35]">DELIMa KPM</h2>
-                  <ChevronRight size={16} className="text-[#A3A7BB]" />
-                </div>
-                <p className="text-[12px] sm:text-[13px] text-[#A3A7BB] font-medium mt-0.5">Semakan ID Pelajar</p>
-              </div>
-            </div>
+          <div className={`flex-1 w-full ${result ? 'flex flex-col md:flex-row gap-8 items-start' : ''}`}>
 
             {/* Search Card */}
-            <div className="bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.05)] mb-8">
+            <div className={`bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.05)] ${result ? 'w-full md:w-1/2 mb-0' : 'mb-8'}`}>
                <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5 mb-6">
                   <div className="relative w-16 h-16 shrink-0">
                     <svg className="w-16 h-16 transform -rotate-90">
@@ -300,16 +298,16 @@ export default function App() {
                   <button 
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-white border-2 border-[#F2F5FA] text-[#161D35] rounded-2xl py-3.5 sm:py-4 text-[15px] font-bold hover:bg-[#F2F5FA] hover:border-[#E5E9F2] transition-colors flex items-center justify-center gap-2"
+                    className="w-full bg-[#8d79ff] text-white rounded-2xl py-3.5 sm:py-4 text-[15px] font-bold hover:bg-[#7b68ee] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#8d79ff]/30"
                   >
-                    {isLoading ? <Loader2 size={18} className="animate-spin text-[#A098FE]" /> : "Semak Sekarang"}
+                    {isLoading ? <Loader2 size={18} className="animate-spin text-white" /> : "Semak"}
                   </button>
                </form>
             </div>
 
             {/* Results Area */}
             {result && (
-              <div className="animate-in slide-in-from-bottom-4 fade-in duration-500 mt-2">
+              <div className="w-full md:w-1/2 animate-in slide-in-from-bottom-4 fade-in duration-500 mt-2 md:mt-0">
                 
                 {result.status === 'success' ? (
                   <div className="bg-gradient-to-br from-[#9381FF] to-[#7E69FF] rounded-[28px] p-6 sm:p-8 text-white relative overflow-hidden shadow-xl shadow-[#7E69FF]/30 border border-white/10">
@@ -372,6 +370,52 @@ export default function App() {
                 )}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* PWA Tutorial Modal */}
+      {showPwaTutorial && (
+        <div className="fixed inset-0 bg-[#161D35]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[32px] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold text-xl text-[#161D35] flex items-center gap-2">
+                  <Smartphone size={24} className="text-[#A098FE]" /> Install Aplikasi
+                </h3>
+                <button onClick={() => setShowPwaTutorial(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5">
+                  <h4 className="font-bold text-[#161D35] mb-2 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs">1</span> 
+                    Untuk Pengguna Android (Chrome)
+                  </h4>
+                  <p className="text-sm text-gray-600 leading-relaxed pl-8">
+                    Tekan butang menu <span className="font-bold">(⋮)</span> di penjuru kanan atas pelayar Chrome anda, kemudian pilih <span className="font-bold text-blue-600">"Add to Home Screen"</span> atau <span className="font-bold text-blue-600">"Install app"</span>.
+                  </p>
+                </div>
+
+                <div className="bg-gray-50/50 border border-gray-100 rounded-2xl p-5">
+                  <h4 className="font-bold text-[#161D35] mb-2 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs">2</span> 
+                    Untuk Pengguna iOS (Safari)
+                  </h4>
+                  <p className="text-sm text-gray-600 leading-relaxed pl-8">
+                    Tekan butang <span className="font-bold">Share</span> (ikon kotak berserta anak panah ke atas) di bahagian bawah skrin, tatal ke bawah dan pilih <span className="font-bold text-gray-900">"Add to Home Screen"</span>.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <button onClick={() => setShowPwaTutorial(false)} className="w-full bg-[#E5E9F2] hover:bg-[#D0D4E4] text-[#161D35] rounded-xl py-3.5 font-bold transition-colors">
+                  Faham & Tutup
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
