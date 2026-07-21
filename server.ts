@@ -13,7 +13,8 @@ const adminTokens = new Set<string>();
 // State untuk tetapan sistem lalai
 let appSettings = {
   systemName: 'Semakan ID DELIMa Murid',
-  schoolName: 'SK Batu Lanchang'
+  schoolName: 'SK Batu Lanchang',
+  logoUrl: ''
 };
 
 // Lazy load Supabase client only when needed (Admin Panel)
@@ -34,12 +35,24 @@ function getSupabase() {
 const app = express();
 const PORT = 3000;
 
-// Middleware untuk parse JSON request body
-app.use(express.json());
+// Middleware untuk parse JSON request body, naikkan had kepada 10mb untuk base64 image logo
+app.use(express.json({ limit: '10mb' }));
 
 // --- API TETAPAN SISTEM ---
-app.get('/api/settings', (req, res) => {
-  // Return directly from memory, no Supabase call for public search page
+app.get('/api/settings', async (req, res) => {
+  const client = getSupabase();
+  if (client) {
+    try {
+      const { data, error } = await client.from('app_settings').select('system_name, school_name, logo_url').eq('id', 1).maybeSingle();
+      if (!error && data) {
+        if (data.system_name) appSettings.systemName = data.system_name;
+        if (data.school_name) appSettings.schoolName = data.school_name;
+        if (data.logo_url) appSettings.logoUrl = data.logo_url;
+      }
+    } catch (err) {
+      console.error('Ralat memuatkan tetapan dari Supabase:', err);
+    }
+  }
   res.json(appSettings);
 });
 
@@ -55,10 +68,11 @@ app.post('/api/admin/login', async (req, res) => {
     const client = getSupabase();
     if (client) {
       try {
-        const { data, error } = await client.from('app_settings').select('system_name, school_name').eq('id', 1).maybeSingle();
+        const { data, error } = await client.from('app_settings').select('system_name, school_name, logo_url').eq('id', 1).maybeSingle();
         if (!error && data) {
           if (data.system_name) appSettings.systemName = data.system_name;
           if (data.school_name) appSettings.schoolName = data.school_name;
+          if (data.logo_url) appSettings.logoUrl = data.logo_url;
         }
       } catch (err) {
         console.error('Ralat memuatkan tetapan dari Supabase:', err);
@@ -72,13 +86,14 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 app.post('/api/admin/settings', async (req, res) => {
-  const { token, systemName, schoolName } = req.body;
+  const { token, systemName, schoolName, logoUrl } = req.body;
   if (!token || !adminTokens.has(token)) {
     return res.status(403).json({ status: 'error', message: 'Akses ditolak atau sesi tamat.' });
   }
   
   if (systemName !== undefined) appSettings.systemName = systemName;
   if (schoolName !== undefined) appSettings.schoolName = schoolName;
+  if (logoUrl !== undefined) appSettings.logoUrl = logoUrl;
 
   const client = getSupabase();
   if (client) {
@@ -86,7 +101,8 @@ app.post('/api/admin/settings', async (req, res) => {
       const { error } = await client.from('app_settings').upsert({
         id: 1,
         system_name: appSettings.systemName,
-        school_name: appSettings.schoolName
+        school_name: appSettings.schoolName,
+        logo_url: appSettings.logoUrl
       });
       if (error) {
         console.error('Ralat menyimpan ke Supabase:', error);
