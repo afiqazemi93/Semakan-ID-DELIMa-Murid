@@ -13,82 +13,84 @@ const adminTokens = new Set<string>();
 // State untuk tetapan sistem lalai
 let appSettings = {
   systemName: 'Semakan ID DELIMa Murid',
-  schoolName: 'SK Batu Lanchang',
-  logoUrl: '' // Base64 image atau URL
+  schoolName: 'SK Batu Lanchang'
 };
 
-// Supabase Setup
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+// Lazy load Supabase client only when needed (Admin Panel)
 let supabase: any = null;
-
-if (supabaseUrl && supabaseKey) {
-  supabase = createClient(supabaseUrl, supabaseKey);
-  console.log('Supabase client initialized');
-} else {
-  console.log('Warning: Supabase credentials not found in environment variables');
+function getSupabase() {
+  if (supabase) return supabase;
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('Supabase client initialized lazily');
+  } else {
+    console.log('Warning: Supabase credentials not found in environment variables');
+  }
+  return supabase;
 }
 
 const app = express();
 const PORT = 3000;
 
-// Middleware untuk parse JSON request body, naikkan had kepada 10mb untuk base64 image logo
-app.use(express.json({ limit: '10mb' }));
+// Middleware untuk parse JSON request body
+app.use(express.json());
 
 // --- API TETAPAN SISTEM ---
-app.get('/api/settings', async (req, res) => {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.from('app_settings').select('*').eq('id', 1).maybeSingle();
-      if (error) {
-        console.error('Ralat Supabase (Settings):', error.message);
-      }
-      if (data) {
-        if (data.system_name) appSettings.systemName = data.system_name;
-        if (data.school_name) appSettings.schoolName = data.school_name;
-        if (data.logo_url !== undefined) appSettings.logoUrl = data.logo_url;
-      }
-    } catch (err) {
-      console.error('Ralat memuatkan tetapan dari Supabase:', err);
-    }
-  }
+app.get('/api/settings', (req, res) => {
+  // Return directly from memory, no Supabase call for public search page
   res.json(appSettings);
 });
 
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', async (req, res) => {
   const { username, password } = req.body;
   if (username === 'adminskbl' && password === '@pbb1014') {
     const token = crypto.randomBytes(32).toString('hex');
     adminTokens.add(token);
     // Sesi sah untuk 24 jam
     setTimeout(() => adminTokens.delete(token), 24 * 60 * 60 * 1000);
-    res.json({ status: 'success', token });
+    
+    // Initialize Supabase only after admin login
+    const client = getSupabase();
+    if (client) {
+      try {
+        const { data, error } = await client.from('app_settings').select('system_name, school_name').eq('id', 1).maybeSingle();
+        if (!error && data) {
+          if (data.system_name) appSettings.systemName = data.system_name;
+          if (data.school_name) appSettings.schoolName = data.school_name;
+        }
+      } catch (err) {
+        console.error('Ralat memuatkan tetapan dari Supabase:', err);
+      }
+    }
+
+    res.json({ status: 'success', token, settings: appSettings });
   } else {
     res.status(401).json({ status: 'error', message: 'ID atau Kata Laluan salah.' });
   }
 });
 
 app.post('/api/admin/settings', async (req, res) => {
-  const { token, systemName, schoolName, logoUrl } = req.body;
+  const { token, systemName, schoolName } = req.body;
   if (!token || !adminTokens.has(token)) {
     return res.status(403).json({ status: 'error', message: 'Akses ditolak atau sesi tamat.' });
   }
   
   if (systemName !== undefined) appSettings.systemName = systemName;
   if (schoolName !== undefined) appSettings.schoolName = schoolName;
-  if (logoUrl !== undefined) appSettings.logoUrl = logoUrl;
 
-  if (supabase) {
+  const client = getSupabase();
+  if (client) {
     try {
-      const { error } = await supabase.from('app_settings').upsert({
+      const { error } = await client.from('app_settings').upsert({
         id: 1,
         system_name: appSettings.systemName,
-        school_name: appSettings.schoolName,
-        logo_url: appSettings.logoUrl
+        school_name: appSettings.schoolName
       });
       if (error) {
         console.error('Ralat menyimpan ke Supabase:', error);
-        return res.status(500).json({ status: 'error', message: `Ralat Pangkalan Data (Supabase): ${error.message}. Sila pastikan RLS (Row-Level Security) dinyahaktifkan untuk table 'app_settings' di Supabase atau gunakan Service Role Key.` });
+        return res.status(500).json({ status: 'error', message: `Ralat Pangkalan Data: ${error.message}.` });
       }
     } catch (err) {
        console.error('Ralat pelayan Supabase:', err);
@@ -133,7 +135,7 @@ app.post('/api/search', async (req, res) => {
     // Lindungi token (Hanya boleh diguna sekali untuk mengelakkan spam / brute force berulang)
     validTokens.delete(token);
 
-    // Panggil Google Apps Script secara backend-to-backend (Data tidak di-hardcode di HTML)
+    // Panggil Google Apps Script secara backend-to-backend
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },

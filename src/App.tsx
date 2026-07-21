@@ -3,7 +3,7 @@ import { Search, User, AlertCircle, Loader2, CheckCircle2, ChevronRight, Lock, L
 
 export default function App() {
   const [view, setView] = useState<'main' | 'login' | 'admin'>('main');
-  const [settings, setSettings] = useState({ systemName: 'Semakan ID DELIMa Murid', schoolName: 'SK Batu Lanchang', logoUrl: '' });
+  const [settings, setSettings] = useState({ systemName: 'Semakan ID DELIMa Murid', schoolName: 'SK Batu Lanchang' });
   const [isSettingsLoading, setIsSettingsLoading] = useState(true);
   const [adminToken, setAdminToken] = useState('');
   const [showPwaTutorial, setShowPwaTutorial] = useState(false);
@@ -29,7 +29,7 @@ export default function App() {
   const [saveSuccess, setSaveSuccess] = useState('');
 
   // Admin Form States
-  const [formSettings, setFormSettings] = useState({ systemName: '', schoolName: '', logoUrl: '' });
+  const [formSettings, setFormSettings] = useState({ systemName: '', schoolName: '' });
 
   useEffect(() => {
     fetch('/api/settings')
@@ -93,21 +93,6 @@ export default function App() {
       alert('Ralat pelayan.');
     } finally {
       setAdminLoading(false);
-    }
-  };
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Saiz gambar terlalu besar. Maksimum 2MB.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormSettings({ ...formSettings, logoUrl: reader.result as string });
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -208,27 +193,6 @@ export default function App() {
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nama Sekolah</label>
                 <input type="text" value={formSettings.schoolName} onChange={e => setFormSettings({...formSettings, schoolName: e.target.value})} required className="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 text-[15px] font-medium text-slate-800 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all shadow-inner" />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Logo Sekolah</label>
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  {formSettings.logoUrl ? (
-                    <div className="w-20 h-20 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-2 shrink-0 relative group shadow-sm">
-                      <img src={formSettings.logoUrl} alt="Logo Preview" className="max-w-full max-h-full object-contain" />
-                      <button type="button" onClick={() => setFormSettings({...formSettings, logoUrl: ''})} className="absolute inset-0 bg-rose-500/90 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold backdrop-blur-sm">Buang</button>
-                    </div>
-                  ) : (
-                    <div className="w-20 h-20 rounded-xl bg-white flex items-center justify-center shrink-0 text-slate-400 border border-dashed border-slate-300 shadow-sm">
-                      <ImageIcon size={24} />
-                    </div>
-                  )}
-                  <div className="flex-1 w-full">
-                    <label className="flex items-center justify-center w-full bg-white border border-slate-200 hover:border-violet-300 hover:bg-violet-50 text-slate-700 rounded-xl py-3 cursor-pointer transition-colors font-semibold text-sm gap-2 shadow-sm">
-                      <Upload size={16} className="text-violet-500" /> Muat Naik Logo (Maks 2MB)
-                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                    </label>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {saveSuccess && (
@@ -267,11 +231,9 @@ export default function App() {
                </div>
             ) : (
               <>
-                {settings.logoUrl && (
-                  <div className="flex justify-center mb-5">
-                    <img src={settings.logoUrl} alt="Logo" className="h-20 sm:h-24 object-contain drop-shadow-sm" loading="lazy" />
-                  </div>
-                )}
+                <div className="flex justify-center mb-5">
+                  <img src="/logo.png" alt="Logo" className="h-20 sm:h-24 object-contain drop-shadow-sm" loading="lazy" />
+                </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">{settings.systemName}</h1>
                 <p className="text-slate-500 font-medium text-sm sm:text-base">{settings.schoolName}</p>
               </>
@@ -440,12 +402,6 @@ export default function App() {
                     Tekan butang <span className="font-bold">Share</span> (ikon kotak berserta anak panah ke atas) di bahagian bawah skrin, tatal ke bawah dan pilih <span className="font-bold text-gray-900">"Add to Home Screen"</span>.
                   </p>
                 </div>
-              </div>
-
-              <div className="mt-8">
-                <button onClick={() => setShowPwaTutorial(false)} className="w-full bg-[#E5E9F2] hover:bg-[#D0D4E4] text-[#161D35] rounded-xl py-3.5 font-bold transition-colors">
-                  Faham & Tutup
-                </button>
               </div>
             </div>
           </div>
