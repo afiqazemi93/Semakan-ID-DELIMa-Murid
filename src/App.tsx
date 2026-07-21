@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, User, AlertCircle, Loader2, CheckCircle2, ChevronRight, Lock, LogOut, Save, Image as ImageIcon, Upload, Copy, Smartphone, X } from 'lucide-react';
+import logoImg from './assets/logo.webp';
 
 export default function App() {
   const [view, setView] = useState<'main' | 'login' | 'admin'>('main');
@@ -232,7 +233,7 @@ export default function App() {
             ) : (
               <>
                 <div className="flex justify-center mb-5">
-                  <img src="/logo.png" alt="Logo" className="h-20 sm:h-24 object-contain drop-shadow-sm" loading="lazy" />
+                  <img src={logoImg} alt="Logo" className="h-20 sm:h-24 object-contain drop-shadow-sm" loading="lazy" />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">{settings.systemName}</h1>
                 <p className="text-slate-500 font-medium text-sm sm:text-base">{settings.schoolName}</p>
